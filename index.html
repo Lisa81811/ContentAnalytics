@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Performance Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f7fafc;
+            color: #1a202c;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+        }
+
+        .app-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .tab {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab.active {
+            color: white;
+            border-bottom-color: white;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .app-main {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .content-calendar, .organic-vs-paid {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .filters-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #718096;
+        }
+
+        .filter-group select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #718096;
+            border-bottom: 2px solid #e2e8f0;
+            cursor: pointer;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .type-badge, .performance-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .type-private { background: #e6f4ff; color: #0066cc; }
+        .type-shared { background: #fff0e6; color: #d46b08; }
+        .badge-high { background: #d4edda; color: #155724; }
+        .badge-average { background: #fff3cd; color: #856404; }
+        .badge-low { background: #f8d7da; color: #721c24; }
+
+        .platform-icon {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            text-align: center;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: white;
+            margin-right: 0.5rem;
+        }
+
+        .ig { background: linear-gradient(45deg, #f09433, #dc2743); }
+        .fb { background: #1877f2; }
+        .tt { background: #000000; }
+        .yt { background: #ff0000; }
+
+        .comparison-grid {
+            padding: 2rem;
+            display: grid;
+            gap: 2rem;
+        }
+
+        .comparison-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+        }
+
+        .card-header h3 {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .platform-tag {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            margin: 0.5rem 0.5rem 0 0;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .comparison-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: #e2e8f0;
+            margin: 1rem 0;
+        }
+
+        .metric-column {
+            background: white;
+            padding: 1.5rem;
+        }
+
+        .label {
+            display: block;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            color: #718096;
+        }
+
+        .organic .label { color: #0066cc; }
+        .boosted .label { color: #d46b08; }
+
+        .lift {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            margin-left: 0.5rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .hidden { display: none; }
+
+        @media (max-width: 768px) {
+            .comparison-row { grid-template-columns: 1fr; }
+            .app-main { padding: 0 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-header">
+        <h1 class="app-title">Content Performance Dashboard</h1>
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('calendar')">Content Calendar</button>
+            <button class="tab" onclick="showTab('organic')">Organic vs Paid</button>
+        </div>
+    </div>
+
+    <div class="app-main">
+        <!-- Content Calendar Tab -->
+        <div id="calendar-tab" class="content-calendar">
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label>Content Type:</label>
+                    <select id="type-filter" onchange="filterContent()">
+                        <option value="all">All</option>
+                        <option value="private">Private</option>
+                        <option value="shared">Shared</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Performance:</label>
+                    <select id="perf-filter" onchange="filterContent()">
+                        <option value="all">All</option>
+                        <option value="high">High</option>
+                        <option value="average">Average</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Content #</th>
+                            <th>Type</th>
+                            <th>Hook</th>
+                            <th>Posted Date</th>
+                            <th>Performance</th>
+                            <th>Total Views</th>
+                            <th>Platform Views</th>
+                            <th>Avg Retention</th>
+                            <th>Engagement</th>
+                        </tr>
+                    </thead>
+                    <tbody id="content-table-body">
+                        <!-- Content will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Organic vs Paid Tab -->
+        <div id="organic-tab" class="organic-vs-paid hidden">
+            <div class="comparison-grid" id="comparison-grid">
+                <!-- Comparison cards will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock Data
+        const contentData = [
+            {
+                contentNumber: 'Content 646',
+                contentType: 'shared',
+                hook: 'One thing this Sydney hostel does differently',
+                postedDate: '2026-02-07',
+                views: { instagram: 278, facebook: 50, tiktok: 303, youtube: 100 },
+                retention: { instagram: 40, facebook: 30, tiktok: 56, youtube: 45 },
+                likes: 15, comments: 3, saves: 5, shares: 2, newFollows: 1,
+                ads: { tiktok: false, meta: false, google: false },
+                boosted: {
+                    views: { instagram: 0, facebook: 0, tiktok: 0, youtube: 0 },
+                    retention: { instagram: 0, facebook: 0, tiktok: 0, youtube: 0 },
+                    likes: 0, comments: 0, saves: 0, shares: 0
+                }
+            },
+            {
+                contentNumber: 'Content 661',
+                contentType: 'private',
+                hook: 'This is the smarter way to stay in Sydney',
+                postedDate: '2026-02-11',
+                views: { instagram: 779, facebook: 200, tiktok: 695, youtube: 450 },
+                retention: { instagram: 57, facebook: 42, tiktok: 47, youtube: 55 },
+                likes: 45, comments: 12, saves: 20, shares: 8, newFollows: 5,
+                ads: { tiktok: true, meta: true, google: false },
+                boosted: {
+                    views: { instagram: 1200, facebook: 850, tiktok: 1500, youtube: 450 },
+                    retention: { instagram: 52, facebook: 38, tiktok: 44, youtube: 55 },
+                    likes: 85, comments: 28, saves: 45, shares: 18
+                }
+            },
+            {
+                contentNumber: 'Content 656',
+                contentType: 'shared',
+                hook: "Why weight loss alone isn't always enough?",
+                postedDate: '2026-02-06',
+                views: { instagram: 261, facebook: 120, tiktok: 295, youtube: 80 },
+                retention: { instagram: 19, facebook: 25, tiktok: 45, youtube: 30 },
+                likes: 8, comments: 1, saves: 2, shares: 1, newFollows: 0,
+                ads: { tiktok: false, meta: false, google: false },
+                boosted: {
+                    views: { instagram: 0, facebook: 0, tiktok: 0, youtube: 0 },
+                    retention: { instagram: 0, facebook: 0, tiktok: 0, youtube: 0 },
+                    likes: 0, comments: 0, saves: 0, shares: 0
+                }
+            }
+        ];
+
+        // Calculate performance
+        function calculatePerformance(item) {
+            const avgRetention = (item.retention.instagram + item.retention.facebook + 
+                                 item.retention.tiktok + item.retention.youtube) / 4;
+            const totalViews = item.views.instagram + item.views.facebook + 
+                              item.views.tiktok + item.views.youtube;
+            const engagementRate = ((item.likes + item.comments + item.saves + item.shares) / totalViews) * 100;
+            
+            if (avgRetention > 40 || engagementRate > 5) return 'high';
+            if (avgRetention < 25 && engagementRate < 2) return 'low';
+            return 'average';
+        }
+
+        // Render content calendar
+        function renderContentCalendar() {
+            const tbody = document.getElementById('content-table-body');
+            const typeFilter = document.getElementById('type-filter').value;
+            const perfFilter = document.getElementById('perf-filter').value;
+            
+            const filtered = contentData.filter(item => {
+                if (typeFilter !== 'all' && item.contentType !== typeFilter) return false;
+                if (perfFilter !== 'all' && calculatePerformance(item) !== perfFilter) return false;
+                return true;
+            });
+
+            tbody.innerHTML = filtered.map(item => {
+                const totalViews = item.views.instagram + item.views.facebook + 
+                                  item.views.tiktok + item.views.youtube;
+                const avgRetention = ((item.retention.instagram + item.retention.facebook + 
+                                      item.retention.tiktok + item.retention.youtube) / 4).toFixed(1);
+                const performance = calculatePerformance(item);
+
+                return `
+                    <tr>
+                        <td>${item.contentNumber}</td>
+                        <td><span class="type-badge type-${item.contentType}">${item.contentType}</span></td>
+                        <td>${item.hook}</td>
+                        <td>${new Date(item.postedDate).toLocaleDateString()}</td>
+                        <td><span class="performance-badge badge-${performance}">${performance}</span></td>
+                        <td><strong>${totalViews.toLocaleString()}</strong></td>
+                        <td>
+                            <div><span class="platform-icon ig">IG</span>${item.views.instagram}</div>
+                            <div><span class="platform-icon fb">FB</span>${item.views.facebook}</div>
+                            <div><span class="platform-icon tt">TT</span>${item.views.tiktok}</div>
+                            <div><span class="platform-icon yt">YT</span>${item.views.youtube}</div>
+                        </td>
+                        <td>${avgRetention}%</td>
+                        <td>
+                            <div>❤️ ${item.likes}</div>
+                            <div>💬 ${item.comments}</div>
+                            <div>🔖 ${item.saves}</div>
+                            <div>🔄 ${item.shares}</div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render organic vs paid
+        function renderOrganicVsPaid() {
+            const grid = document.getElementById('comparison-grid');
+            const boosted = contentData.filter(item => item.ads.tiktok || item.ads.meta || item.ads.google);
+
+            if (boosted.length === 0) {
+                grid.innerHTML = '<div style="text-align:center; padding:4rem; color:#718096;"><p>No boosted content found.</p></div>';
+                return;
+            }
+
+            grid.innerHTML = boosted.map(item => {
+                const calculateLift = (organic, boosted) => {
+                    if (organic === 0) return 0;
+                    return (((boosted - organic) / organic) * 100).toFixed(1);
+                };
+
+                return `
+                    <div class="comparison-card">
+                        <div class="card-header">
+                            <h3>${item.contentNumber}</h3>
+                            <p>${item.hook}</p>
+                            <div>
+                                ${item.ads.tiktok ? '<span class="platform-tag">TikTok Ads</span>' : ''}
+                                ${item.ads.meta ? '<span class="platform-tag">Meta Ads</span>' : ''}
+                                ${item.ads.google ? '<span class="platform-tag">Google Ads</span>' : ''}
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 1.5rem;">
+                            <h4 style="margin-bottom: 1rem;">Views Comparison</h4>
+                            <div class="comparison-row">
+                                <div class="metric-column organic">
+                                    <span class="label">Organic</span>
+                                    <div>IG: ${item.views.instagram.toLocaleString()}</div>
+                                    <div>FB: ${item.views.facebook.toLocaleString()}</div>
+                                    <div>TT: ${item.views.tiktok.toLocaleString()}</div>
+                                    <div>YT: ${item.views.youtube.toLocaleString()}</div>
+                                </div>
+                                <div class="metric-column boosted">
+                                    <span class="label">Boosted</span>
+                                    <div>IG: ${item.boosted.views.instagram.toLocaleString()} <span class="lift">+${calculateLift(item.views.instagram, item.boosted.views.instagram)}%</span></div>
+                                    <div>FB: ${item.boosted.views.facebook.toLocaleString()} <span class="lift">+${calculateLift(item.views.facebook, item.boosted.views.facebook)}%</span></div>
+                                    <div>TT: ${item.boosted.views.tiktok.toLocaleString()} <span class="lift">+${calculateLift(item.views.tiktok, item.boosted.views.tiktok)}%</span></div>
+                                    <div>YT: ${item.boosted.views.youtube.toLocaleString()}</div>
+                                </div>
+                            </div>
+
+                            <h4 style="margin: 2rem 0 1rem;">Engagement Comparison</h4>
+                            <div class="comparison-row">
+                                <div class="metric-column organic">
+                                    <span class="label">Organic</span>
+                                    <div>❤️ ${item.likes}</div>
+                                    <div>💬 ${item.comments}</div>
+                                    <div>🔖 ${item.saves}</div>
+                                    <div>🔄 ${item.shares}</div>
+                                </div>
+                                <div class="metric-column boosted">
+                                    <span class="label">Boosted</span>
+                                    <div>❤️ ${item.boosted.likes} <span class="lift">+${calculateLift(item.likes, item.boosted.likes)}%</span></div>
+                                    <div>💬 ${item.boosted.comments} <span class="lift">+${calculateLift(item.comments, item.boosted.comments)}%</span></div>
+                                    <div>🔖 ${item.boosted.saves} <span class="lift">+${calculateLift(item.saves, item.boosted.saves)}%</span></div>
+                                    <div>🔄 ${item.boosted.shares} <span class="lift">+${calculateLift(item.shares, item.boosted.shares)}%</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Tab switching
+        function showTab(tab) {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if (tab === 'calendar') {
+                document.getElementById('calendar-tab').classList.remove('hidden');
+                document.getElementById('organic-tab').classList.add('hidden');
+                renderContentCalendar();
+            } else {
+                document.getElementById('calendar-tab').classList.add('hidden');
+                document.getElementById('organic-tab').classList.remove('hidden');
+                renderOrganicVsPaid();
+            }
+        }
+
+        // Filter content
+        function filterContent() {
+            renderContentCalendar();
+        }
+
+        // Initialize
+        renderContentCalendar();
+    </script>
+</body>
+</html>
