@@ -56,10 +56,19 @@ Wait 1-2 minutes for it to deploy!
 
 - ✅ Content Calendar with filters
 - ✅ Organic vs Paid comparison
+- ✅ **YouTube (live)** – auto-fetch views, likes, comments via YouTube Data API
 - ✅ Multi-platform metrics (IG, FB, TikTok, YouTube)
 - ✅ Interactive filtering
 - ✅ Responsive design
-- ✅ Works offline (no external dependencies!)
+- ✅ Works offline for static data; YouTube tab needs API key + network
+
+## 📺 YouTube (live)
+
+The **YouTube (live)** tab fetches views, likes, and comments for `@AzzurroPodHotels`.
+
+1. Get an API key: [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Enable **YouTube Data API v3** → Create credentials → API key.
+2. Open `index.html` and find the line `const YOUTUBE_API_KEY = '';` (in the script, near the top). Paste your key between the quotes.
+3. No input on the page – the key lives only in the file. Use **Refresh YouTube data** in the YouTube tab to fetch.
 
 ## 💡 Customize Data
 
